@@ -5,6 +5,12 @@ heartbeat; MQTT START asks Buddy 2 to drive forward; STOP asks it to stop.
 The optional sensor publication APIs remain available for later integration
 but are never called automatically by this demo.
 
+## START / STOP buttons
+
+A [browser dashboard](DASHBOARD.md) is available. Run it from Ubuntu/WSL with
+your existing broker; it needs no firmware or broker WebSocket changes. It
+shows live heartbeat/ACK feedback and uses the same binary command protocol.
+
 ## Only a Pico W and Wi-Fi available?
 
 Use **[the Pico-only API test](PICO_ONLY_TEST.md)**. Build with

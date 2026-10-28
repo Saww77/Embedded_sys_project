@@ -24,3 +24,9 @@ config/wifi_secrets.h
 
 # macOS
 .DS_Store
+
+# Local dashboard Python dependencies and bytecode
+.dashboard-venv/
+.venv/
+__pycache__/
+*.py[cod]

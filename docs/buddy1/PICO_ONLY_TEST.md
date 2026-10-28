@@ -75,6 +75,12 @@ Buddy 1 API TEST: simulated motion API, no motor driver loaded
 If you attach the serial monitor after boot you may miss those startup lines;
 START/STOP logs are printed when each command is received.
 
+## Optional START / STOP dashboard
+
+If you prefer buttons, use [the browser dashboard](DASHBOARD.md). It runs in
+Ubuntu/WSL with the same broker and this firmware. No rebuild/reflash is needed.
+It shows heartbeat/ACK feedback and sends the same binary commands as below.
+
 ## 4. Send MQTT commands from your PC
 
 From the project root, create/activate a Python virtual environment and install

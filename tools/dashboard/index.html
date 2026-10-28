@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SE09 · Robot control</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="page-header">
+      <div><div class="eyebrow"><span class="brand-mark"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10"/></svg></span> SE09 <span class="divider">/</span> BUDDY 1</div>
+        <h1>Robot control<span class="title-dot">.</span></h1>
+        <p class="subtitle">A heartbeat. Two commands. One connected Pico.</p>
+      </div>
+      <div class="connection-pill" id="broker-pill"><span class="dot"></span><span id="broker-label">Connecting dashboard</span></div>
+    </header>
+
+    <section class="connection-strip" aria-label="MQTT settings">
+      <div><span class="field-label">MQTT BROKER</span><span class="mono" id="broker-address">—</span></div>
+      <span class="strip-divider"></span>
+      <div><span class="field-label">TOPIC ROOT</span><span class="mono" id="topic-root">—</span></div>
+      <div class="stream-label"><span class="dot"></span> LIVE MONITOR</div>
+    </section>
+
+    <div id="notice" class="notice" role="status" hidden></div>
+
+    <div class="main-grid">
+      <section class="card control-card">
+        <div class="section-top"><span class="eyebrow">01 / COMMANDS</span><span class="tiny-label">BINARY MQTT</span></div>
+        <div class="ready-line"><span class="ready-dot" id="ready-dot"></span><h2 id="pico-state">Waiting for the Pico</h2></div>
+        <p class="card-description" id="pico-description">Connect to your broker and wait for a live heartbeat.</p>
+        <div class="command-buttons">
+          <button id="start" class="command start" disabled><span class="button-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 4 14 8-14 8z"/></svg></span><span class="button-word">START</span><span class="button-caption">Request forward</span></button>
+          <button id="stop" class="command stop" disabled><span class="button-icon stop-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="1"/></svg></span><span class="button-word">STOP</span><span class="button-caption">Request stop</span></button>
+        </div>
+        <div class="command-feedback" id="command-feedback" aria-live="polite">No command sent from this dashboard.</div>
+        <div class="control-note"><span class="note-icon">i</span><p>In API-test mode, confirm the function-call logs in your Pico’s USB serial monitor. An ACK confirms a request, not physical movement.</p></div>
+      </section>
+
+      <section class="card heartbeat-card">
+        <div class="section-top"><span class="eyebrow">02 / HEARTBEAT</span><span class="interval-label">EVERY 5s</span></div>
+        <div class="heartbeat-hero"><div><span class="field-label">LAST LIVE SIGNAL</span><div class="heartbeat-value" id="heartbeat-age">—</div></div>
+          <svg class="pulse-chart" viewBox="0 0 136 55" aria-hidden="true"><path d="M0 30 H29 L39 30 L48 12 L61 48 L73 6 L85 30 H136"/></svg>
+        </div>
+        <div class="connection-flags">
+          <div class="flag-row"><span>Wi-Fi</span><span id="wifi" class="flag">Unknown</span></div>
+          <div class="flag-row"><span>MQTT connection</span><span id="mqtt" class="flag">Unknown</span></div>
+          <div class="flag-row"><span>Command subscription</span><span id="subscribed" class="flag">Unknown</span></div>
+        </div>
+        <div class="heartbeat-footer"><span>STATUS BYTE <code id="status-hex">—</code></span><span id="drop-status">Waiting for data</span></div>
+      </section>
+    </div>
+
+    <div class="bottom-grid">
+      <section class="card ack-card">
+        <div class="section-top"><span class="eyebrow">03 / PICO ACK</span><span class="tiny-label">LATEST RECEIVED</span></div>
+        <div id="ack-result" class="ack-result">No acknowledgment yet</div>
+        <p id="ack-detail" class="muted">Send START or STOP to test the command path.</p>
+        <div class="ack-footer"><span id="ack-time">—</span><code id="ack-hex">—</code></div>
+        <p class="ack-note">Shared topic · ACKs can also come from other clients.</p>
+      </section>
+
+      <section class="card event-card">
+        <div class="section-top"><span class="eyebrow">04 / ACTIVITY</span><span class="tiny-label">LATEST 40 EVENTS</span></div>
+        <div class="event-scroll"><table aria-label="Connection and command activity"><thead><tr><th>TIME</th><th>EVENT</th></tr></thead><tbody id="events"><tr><td>—</td><td>Waiting for dashboard connection…</td></tr></tbody></table></div>
+      </section>
+    </div>
+    <footer class="page-footer"><span>SE09 / EMBEDDED SYSTEMS</span><span>Send STOP before closing while a motion request is active.</span></footer>
+  </main>
+</body>
+</html>

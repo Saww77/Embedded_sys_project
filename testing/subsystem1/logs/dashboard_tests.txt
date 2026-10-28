@@ -1,0 +1,23 @@
+Dashboard verification (laptop software; no physical Pico used in these checks)
+State/HTTP tests: Python stdlib, fake MQTT client.
+Browser integration: Chromium + Playwright, real Mosquitto 2.0.21 on loopback,
+paho-mqtt 2.1.0, simulated Pico protocol fixture.
+No firmware sources changed; existing binary MQTT protocol reused.
+
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 2.019s
+
+OK
+
+PASS CLI: empty address reprompted; valid IP starts local HTTP dashboard; no startup command
+PASS browser: retained status does not enable START; connected STOP remains available
+PASS end-to-end: button -> HTTP -> real Mosquitto -> binary 01/00, QoS 0, non-retained -> fixture ACK -> browser
+PASS browser: rapid START then STOP preserves command order
+PASS browser: mobile layout has no horizontal overflow
+PASS browser: stale heartbeat disables START and keeps STOP available
+PASS browser: broker loss disables controls; no auto-command; no JavaScript errors
+
+JavaScript syntax check: node --check tools/dashboard/app.js PASS
+Existing MQTT demo-client tests: 2 passed.
+Physical Pico/dashboard round-trip remains a user-side check.

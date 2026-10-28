@@ -76,3 +76,12 @@ A silent partition may require the MQTT keepalive interval before disconnection
 is observed. Network STOP is best effort; keep physical motor power control
 available. A START ACK is submission confirmation, not proof the owner accepted
 or executed the movement. Compare the actual motor behavior during the demo.
+
+## Browser dashboard
+
+The laptop-only dashboard adds no firmware changes. See
+`docs/buddy1/DASHBOARD.md` and `logs/dashboard_tests.txt`. State/HTTP tests cover
+command gating, binary bytes, stale/retained status, broker failures and request
+validation. Real Mosquitto/Chromium checks use a simulated Pico protocol fixture;
+these are not physical Pico or motor tests. The existing API-test UF2 remains
+compatible with the dashboard's exact non-retained binary START/STOP payloads.

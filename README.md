@@ -257,6 +257,25 @@ They need the SDK's `lib/lwip` submodule and a `config/wifi_secrets.h`
 T-License 2.2. This dual-core RP2040 port is derived from the official
 μT-Kernel 3.0 BSP (`tron-forum/mtk3_bsp`, branch `pico_rp2040`).*
 
+## START / STOP dashboard
+
+Use the browser dashboard with the Pico firmware you already flashed. It runs
+from Ubuntu/WSL and connects to your existing Mosquitto broker on port 1883.
+
+```sh
+# Project root, in Ubuntu:
+sudo apt install -y python3-venv
+python3 -m venv .dashboard-venv
+. .dashboard-venv/bin/activate
+python3 -m pip install -r tools/dashboard/requirements.txt
+python3 tools/buddy1_dashboard.py
+```
+
+Enter your actual broker IPv4 address at the prompt, then open
+`http://localhost:8080` in your Windows browser. Use START and STOP while
+watching the heartbeat, Pico ACK and USB serial API-call logs.
+[Dashboard instructions and troubleshooting](docs/buddy1/DASHBOARD.md).
+
 ## Buddy 1 with only a Pico W and Wi-Fi (no motor hardware)
 
 Use the API-dispatch test to receive real MQTT START/STOP commands and print
