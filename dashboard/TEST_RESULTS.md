@@ -8,10 +8,11 @@
 - The app and tests import no firmware code or files from the tools folder.
 - No Pico firmware source was changed for this separated application.
 
-Browser test results:
+Browser test results (simplified testing-only UI):
 
 ```text
 PASS CLI: empty address reprompted; valid IP starts local HTTP dashboard; no startup command
+PASS browser: only broker bar, command controls and heartbeat panels are shown
 PASS browser: retained status does not enable START; connected STOP remains available
 PASS end-to-end: button -> HTTP -> real Mosquitto -> binary 01/00, QoS 0, non-retained -> fixture ACK -> browser
 PASS browser: rapid START then STOP preserves command order

@@ -9,19 +9,11 @@
 </head>
 <body>
   <main class="shell">
-    <header class="page-header">
-      <div><div class="eyebrow"><span class="brand-mark"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10"/></svg></span> SE09 <span class="divider">/</span> BUDDY 1</div>
-        <h1>Robot control<span class="title-dot">.</span></h1>
-        <p class="subtitle">A heartbeat. Two commands. One connected Pico.</p>
-      </div>
-      <div class="connection-pill" id="broker-pill"><span class="dot"></span><span id="broker-label">Connecting dashboard</span></div>
-    </header>
-
     <section class="connection-strip" aria-label="MQTT settings">
       <div><span class="field-label">MQTT BROKER</span><span class="mono" id="broker-address">—</span></div>
       <span class="strip-divider"></span>
       <div><span class="field-label">TOPIC ROOT</span><span class="mono" id="topic-root">—</span></div>
-      <div class="stream-label"><span class="dot"></span> LIVE MONITOR</div>
+      <div class="stream-label" id="live-monitor"><span class="dot"></span> LIVE MONITOR</div>
     </section>
 
     <div id="notice" class="notice" role="status" hidden></div>
@@ -53,21 +45,6 @@
       </section>
     </div>
 
-    <div class="bottom-grid">
-      <section class="card ack-card">
-        <div class="section-top"><span class="eyebrow">03 / PICO ACK</span><span class="tiny-label">LATEST RECEIVED</span></div>
-        <div id="ack-result" class="ack-result">No acknowledgment yet</div>
-        <p id="ack-detail" class="muted">Send START or STOP to test the command path.</p>
-        <div class="ack-footer"><span id="ack-time">—</span><code id="ack-hex">—</code></div>
-        <p class="ack-note">Shared topic · ACKs can also come from other clients.</p>
-      </section>
-
-      <section class="card event-card">
-        <div class="section-top"><span class="eyebrow">04 / ACTIVITY</span><span class="tiny-label">LATEST 40 EVENTS</span></div>
-        <div class="event-scroll"><table aria-label="Connection and command activity"><thead><tr><th>TIME</th><th>EVENT</th></tr></thead><tbody id="events"><tr><td>—</td><td>Waiting for dashboard connection…</td></tr></tbody></table></div>
-      </section>
-    </div>
-    <footer class="page-footer"><span>SE09 / EMBEDDED SYSTEMS</span><span>Send STOP before closing while a motion request is active.</span></footer>
   </main>
 </body>
 </html>

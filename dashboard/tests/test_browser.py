@@ -112,21 +112,24 @@ def main():
             expect(page.locator("#status-hex")).to_have_text("07")
             assert page.locator("#start").is_disabled()  # Retained status is not live evidence.
             assert page.locator("#stop").is_enabled()
+            assert page.locator(".page-header, .bottom-grid, .ack-card, .event-card, .page-footer").count() == 0
+            assert page.locator(".connection-strip, .control-card, .heartbeat-card").count() == 3
+            print("PASS browser: only broker bar, command controls and heartbeat panels are shown")
             print("PASS browser: retained status does not enable START; connected STOP remains available")
             fixture.publish(root + "/status", b"\x07", qos=0, retain=True).wait_for_publish(timeout=5)
             page.locator("#start").wait_for(state="visible")
             expect(page.locator("#start")).to_be_enabled()
             page.locator("#start").click()
-            expect(page.locator("#ack-result")).to_have_text("START accepted")
+            expect(page.locator("#command-feedback")).to_have_text("Pico ACK: START accepted.")
             page.locator("#stop").click()
-            expect(page.locator("#ack-result")).to_have_text("STOP accepted")
+            expect(page.locator("#command-feedback")).to_have_text("Pico ACK: STOP accepted.")
             assert commands == [(b"\x01", 0, False), (b"\x00", 0, False)], commands
             print("PASS end-to-end: button -> HTTP -> real Mosquitto -> binary 01/00, QoS 0, non-retained -> fixture ACK -> browser")
             page.locator("#start").click()
             page.locator("#stop").click()
             wait_until(lambda: len(commands) == 4)
             assert commands[-2:] == [(b"\x01", 0, False), (b"\x00", 0, False)]
-            expect(page.locator("#ack-result")).to_have_text("STOP accepted")
+            expect(page.locator("#command-feedback")).to_have_text("Pico ACK: STOP accepted.")
             print("PASS browser: rapid START then STOP preserves command order")
             # Fresh signal for a representative desktop screenshot.
             fixture.publish(root + "/status", b"\x07", qos=0, retain=True).wait_for_publish(timeout=5)
@@ -142,7 +145,7 @@ def main():
             print("PASS browser: stale heartbeat disables START and keeps STOP available")
             broker.terminate()
             broker.wait(timeout=5)
-            expect(page.locator("#broker-label")).to_have_text("Broker disconnected")
+            expect(page.locator("#pico-state")).to_have_text("Broker unavailable")
             assert page.locator("#start").is_disabled() and page.locator("#stop").is_disabled()
             assert len(commands) == 4  # No automatic command/replay.
             assert not errors, errors

@@ -57,7 +57,8 @@ Ubuntu/WSL avoids needing a separate Windows Python installation.
    `motion_forward() called` and `motion_stop() called`. Those are test-stub
    calls; ACKs do not prove physical movement.
 
-Heartbeat, connection flags, latest ACK and a 40-event activity log are shown.
+Only the broker/topic bar, START/STOP controls and heartbeat panel are shown.
+Acknowledgments appear in the feedback line beneath the buttons.
 START pauses after 15 seconds without a live ready heartbeat. STOP remains
 available while the broker is connected. Send STOP before closing if a motion
 request is active; closing the page/app does not itself send STOP.
