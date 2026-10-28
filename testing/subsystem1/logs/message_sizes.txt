@@ -1,0 +1,6 @@
+Reference native uint32_t fields vs implemented binary payload bytes:
+vehicle: 24 -> 1
+line: 8 -> 1
+terrain: 8 -> 2
+obstacle: 16 -> 6
+period command: 8 -> 2

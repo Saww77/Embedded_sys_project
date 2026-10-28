@@ -1,0 +1,6 @@
+SMP=1 TEST=0 MQTT=1: PASS
+SMP=1 TEST=1 MQTT=1: PASS
+SMP=0 TEST=1 MQTT=1: PASS
+SMP=1 TEST=0 MQTT=0: PASS
+SMP=1 TEST=1 MQTT=0: PASS
+Compiler: GNU Arm 14.2.1; Pico SDK 2.2.0. Selected Buddy 1 and modified service objects only.

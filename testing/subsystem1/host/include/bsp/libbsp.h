@@ -1,0 +1,1 @@
+/* Host tests do not access GPIO. */

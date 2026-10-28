@@ -1,0 +1,12 @@
+../app_program/subsystem3/task_consumer.c:15:9: error: unknown type name 'SAMPLE_MSG'
+../app_program/subsystem3/task_consumer.c:34:51: error: request for member 'value' in something not a structure or union
+../app_program/subsystem3/task_consumer.c:35:44: error: request for member 'value' in something not a structure or union
+../app_program/subsystem3/task_consumer.c:37:51: error: request for member 'value' in something not a structure or union
+../app_program/subsystem3/task_consumer.c:38:44: error: request for member 'value' in something not a structure or union
+../app_program/subsystem3/task_consumer.c:40:37: error: request for member 'value' in something not a structure or union
+../app_program/subsystem3/task_consumer.c:51:52: error: request for member 'value' in something not a structure or union
+../app_program/subsystem3/task_consumer.c:51:64: error: request for member 'prc' in something not a structure or union
+../app_program/subsystem3/task_consumer.c:63:28: error: 'mpf_samples' undeclared (first use in this function); did you mean 'mbx_samples'?
+../app_program/subsystem3/task_consumer.c:64:28: error: 'sem_slots' undeclared (first use in this function)
+../app_program/subsystem4/task_monitor.c:92:28: error: 'sem_slots' undeclared (first use in this function)
+../app_program/subsystem4/task_monitor.c:93:28: error: 'mpf_samples' undeclared (first use in this function); did you mean 'mbx_samples'?
