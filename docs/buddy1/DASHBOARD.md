@@ -1,5 +1,13 @@
 # START / STOP browser dashboard
 
+**Recommended standalone version:** [`dashboard/`](../../dashboard/) at the
+repository top level. Copy that folder anywhere and run `python3 app.py` from
+inside it after installing its own `requirements.txt`. It has no imports from
+the firmware or tools folders. See [its README](../../dashboard/README.md).
+
+The instructions below retain the earlier `tools/buddy1_dashboard.py` workflow
+for compatibility.
+
 The dashboard works with the Pico firmware you already tested. You do not need
 to rebuild or flash the Pico again. Your existing Mosquitto broker stays on TCP
 port 1883; no WebSocket listener or broker configuration change is required.
