@@ -11,14 +11,12 @@ A [browser dashboard](DASHBOARD.md) is available. Run it from Ubuntu/WSL with
 your existing broker; it needs no firmware or broker WebSocket changes. It
 shows live heartbeat/ACK feedback and uses the same binary command protocol.
 
-## Only a Pico W and Wi-Fi available?
+## Real motion APIs
 
-Use **[the Pico-only API test](PICO_ONLY_TEST.md)**. Build with
-`WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_API_TEST=1`; it logs the public forward/stop
-API calls over USB serial and excludes all real motor/encoder code. It is
-immediately ready and needs no motor hardware. The rest of this guide describes
-the real Buddy 2 motor demo (`BUDDY1_API_TEST=0`). Both use real MQTT and the
-same command task and binary command format.
+MQTT START/STOP always call Buddy 2's real public API implementation. The
+serial-only motion replacement and its build option have been removed.
+Rebuild and flash the image below to replace previously flashed fake-API
+firmware. Motor movement requires Buddy 2's motor/encoder hardware and power.
 
 ## Build and flash
 
@@ -27,7 +25,7 @@ Use Pico SDK 2.2.0 with its `tinyusb`, `cyw43-driver` and `lwip` submodules,
 isolated checkout; do not create a worktree just for this workflow.
 
 ```sh
-cp config/wifi_secrets.example.h config/wifi_secrets.h
+cp -n config/wifi_secrets.example.h config/wifi_secrets.h
 # Edit config/wifi_secrets.h: Wi-Fi name/password, broker IPv4 address,
 # MQTT_CLIENT_ID (unique), MQTT_TOPIC_ROOT "robot/se09/v2".
 cd build_make

@@ -8,8 +8,9 @@ the firmware or tools folders. See [its README](../../dashboard/README.md).
 The instructions below retain the earlier `tools/buddy1_dashboard.py` workflow
 for compatibility.
 
-The dashboard works with the Pico firmware you already tested. You do not need
-to rebuild or flash the Pico again. Your existing Mosquitto broker stays on TCP
+The dashboard works with Buddy 1 v2 firmware using Buddy 2's real motion APIs.
+If the Pico still has the former fake-API image, rebuild and reflash using
+`make -j4 WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_DEMO=1` first. Your existing Mosquitto broker stays on TCP
 port 1883; no WebSocket listener or broker configuration change is required.
 
 The browser talks to a small Python server on your laptop. That server uses
@@ -19,7 +20,7 @@ Use Ubuntu/WSL to run it, since Windows Python was not installed in your setup.
 ## First run
 
 1. Leave Mosquitto running on Windows. Plug in the Pico W with your existing
-   API-test firmware and keep its USB serial monitor open.
+   real-motion firmware. Use the motor/encoder wiring agreed with Buddy 2.
 2. Open **Ubuntu**, navigate to your project's root folder (the one containing
    `tools`, not `build_make`) and get the latest project update. If your Ubuntu
    terminal is currently in `build_make`, run `cd ..` first.
@@ -55,24 +56,14 @@ forwarding is supported by the standard WSL setup.
 - Wait for **Broker connected** and **Pico ready for commands**. A fresh live
   heartbeat enables START; the first retained status from the broker alone
   does not confirm the Pico is currently alive.
-- Click **START**. The API-test firmware should print:
+- After Buddy 2's five-second readiness delay, click **START** to submit
+  `motion_set_speed(1)` and `motion_forward()` to the motion task.
+- Click **STOP** to call `motion_stop()` and cancel speed renewals.
+- Check the Pico ACK feedback beneath the buttons. ACK means request submission,
+  not physical movement or completion. No fake function-call logs are generated.
 
-```
-[API TEST] motion_set_speed(1) called
-[API TEST] motion_forward() called
-```
-
-- Click **STOP**. Expect:
-
-```
-[API TEST] motion_stop() called
-```
-
-The dashboard displays the latest Pico ACK, heartbeat age, Wi-Fi/MQTT/
-subscription flags and an activity log. ACK means accepted/submitted request,
-not physical movement or completion. The API-test build still uses serial-only
-motion stubs. Duplicate START while active is idempotent; use STOP then START
-to see a new forward-call log.
+Duplicate START while active is idempotent; use STOP then START
+to see a new forward request.
 
 Commands use topic `robot/se09/v2/command`, one byte `01` for START and `00`
 for STOP, QoS 0, retain=false. Neither dashboard startup nor broker reconnect

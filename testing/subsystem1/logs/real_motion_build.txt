@@ -1,0 +1,13 @@
+Release real-motion firmware build: PASS
+GNU Arm 14.2.1, Pico SDK 2.2.0; WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_DEMO=1
+
+motion_forward: resolves to Buddy 2 motion_transport.c
+motion_stop: resolves to Buddy 2 motion_transport.c
+motion_set_speed: resolves to Buddy 2 motion_transport.c
+Real motion control task linked; no fake motion source linked.
+UF2 generation and block integrity: PASS
+text	   data	    bss	    dec	    hex	filename
+ 343320	     96	  82432	 425848	  67f78	build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_b1demo.elf
+Retired API-test invocation rejected with a migration error: PASS
+Physical motor operation and target timing not tested in cloud.
+Preserved TEST=1 real-motion build also compiles and generates UF2; on-target tests were not run.

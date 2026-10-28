@@ -16,10 +16,6 @@ Current protocol: v2. No physical Pico W is attached to the cloud environment.
 | Complete release demo ELF + UF2 | PASS | real ARM toolchain + SDK; BUDDY1_DEMO=1, TEST=0 |
 | Complete test demo ELF + UF2 | PASS | BUDDY1_DEMO=1, TEST=1; tests compiled, not executed on target |
 | Selected-object compatibility profiles | PASS, five profiles | logs/cross_compile.txt; invalid demo options rejected |
-| Serial-only API stubs | PASS in host tests | correct signatures, range checks, simulated mode and log messages |
-| Command task -> actual test stubs | PASS in host tests | START/STOP frames dispatched, serial logs and accepted ACKs verified |
-| Complete Pico-only API image | PASS | BUDDY1_API_TEST=1, real network stack; no real Buddy 2 source linked |
-| Switch back to real motor demo | PASS | original motion_transport implementation and control task restored |
 | Normal five-subsystem profile | original integration errors remain | SAMPLE_MSG, mpf_samples, sem_slots in Buddy 3/4 |
 | Physical Wi-Fi/MQTT and motor operation | NOT RUN | requires your board, wiring and lab network |
 | Live latency/jitter/heap/stack measurements | NOT MEASURED | do not substitute host test or ELF size for runtime evidence |
@@ -50,14 +46,14 @@ UndefinedBehaviorSanitizer remain enabled. There are no host heap allocations
 in the tested bridge/controller code. Outside that sandbox the default host
 script keeps leak checking enabled.
 
-## Pico-only API-dispatch test
+## Production motion linkage
 
-For users without motor hardware, follow `docs/buddy1/PICO_ONLY_TEST.md`. The
-API-test image replaces Buddy 2's public functions with serial-logging stubs;
-normal builds still use its real code. `logs/api_test_build.txt` records the
-linked image sizes and symbol/source exclusion checks. Real MQTT/USB behavior
-still requires flashing the Pico. A stub log must never be presented as evidence
-that Buddy 2's hardware implementation ran successfully.
+The serial-only MQTT motion replacement and its build mode have been removed.
+Release firmware links Buddy 2's actual `motion_transport.c` implementation and
+motion control task. Host-side mocks remain only in automated tests; no fake
+motion function is built into firmware. See `logs/real_motion_build.txt` for
+current compile and linkage verification. Physical motor behavior still needs
+on-board measurement.
 
 ## On-board checklist (real motor demo)
 
@@ -83,5 +79,4 @@ The laptop-only dashboard adds no firmware changes. See
 `docs/buddy1/DASHBOARD.md` and `logs/dashboard_tests.txt`. State/HTTP tests cover
 command gating, binary bytes, stale/retained status, broker failures and request
 validation. Real Mosquitto/Chromium checks use a simulated Pico protocol fixture;
-these are not physical Pico or motor tests. The existing API-test UF2 remains
-compatible with the dashboard's exact non-retained binary START/STOP payloads.
+these are not physical Pico or motor tests. The real-motion UF2 uses the same non-retained binary START/STOP payloads.

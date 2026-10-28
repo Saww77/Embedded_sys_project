@@ -275,27 +275,9 @@ python3 app.py
 ```
 
 Enter your actual broker IPv4 address, then open `http://localhost:8080` in your
-Windows browser. Keep the terminal, Mosquitto and Pico running. Your current
-Pico firmware works as-is. See **[dashboard setup](dashboard/README.md)**.
+Windows browser. Keep the terminal, Mosquitto and Pico running. Use firmware built with the real motion APIs described below. See **[dashboard setup](dashboard/README.md)**.
 The earlier `tools/buddy1_dashboard.py` entry point remains available for
 existing users; the standalone folder imports no code from it.
-
-## Buddy 1 with only a Pico W and Wi-Fi (no motor hardware)
-
-Use the API-dispatch test to receive real MQTT START/STOP commands and print
-`motion_forward() called` / `motion_stop() called` over USB serial. It replaces
-Buddy 2 with clearly labeled test stubs and never initializes its motor driver.
-This checks the interface and dispatch, not Buddy 2's real motor implementation.
-
-```sh
-# Configure config/wifi_secrets.h with your Wi-Fi and broker first.
-cd build_make
-make -j4 WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_API_TEST=1
-```
-
-Flash `mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_b1demo_api.uf2`.
-[Follow the Pico-only test instructions](docs/buddy1/PICO_ONLY_TEST.md).
-You still need an MQTT broker and a client on your computer, but no dashboard.
 
 ## Buddy 1 heartbeat + START/STOP demo
 
@@ -303,7 +285,7 @@ Build and run Wi-Fi/MQTT heartbeat with Buddy 2 forward/stop control, without
 collecting sensor data or starting the unfinished sensor subsystems:
 
 ```sh
-cp config/wifi_secrets.example.h config/wifi_secrets.h
+cp -n config/wifi_secrets.example.h config/wifi_secrets.h
 # Edit your Wi-Fi credentials and broker IPv4 address in the ignored file.
 # Use MQTT_TOPIC_ROOT "robot/se09/v2" (the v1 command meanings have changed).
 cd build_make
@@ -311,7 +293,10 @@ make -j4 WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_DEMO=1
 ```
 
 Output: `build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_b1demo.uf2`.
-Heartbeat is automatic; motors remain stopped until an MQTT START. The demo
+All MQTT commands use Buddy 2's real motion implementation; the former serial-only
+API test mode has been removed. Rebuild and flash this image to replace any
+previous test-stub firmware. Heartbeat is automatic; motors remain stopped
+until an MQTT START. The demo
 uses the existing motor/encoder wiring in `subsystem2/motion_config.h`; raise
 wheels for the first test. Buddy 2 has a five-second readiness delay.
 

@@ -92,18 +92,11 @@ TEST_SUFFIX := _test
 endif
 
 # Command demo: only Buddy 1 and Buddy 2; unfinished sensor tasks are excluded.
-BUDDY1_API_TEST ?= 0
-ifneq ($(filter $(BUDDY1_API_TEST),0 1),$(BUDDY1_API_TEST))
-$(error Unknown BUDDY1_API_TEST '$(BUDDY1_API_TEST)'; use 0 or 1)
+# Reject retired invocations rather than silently building a different image.
+ifneq ($(origin BUDDY1_API_TEST),undefined)
+$(error BUDDY1_API_TEST has been removed; use WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_DEMO=1 for the real motion APIs)
 endif
-# API test implies the isolated demo unless explicitly overridden.
-BUDDY1_DEMO ?= $(BUDDY1_API_TEST)
-ifeq ($(BUDDY1_API_TEST),1)
-ifneq ($(BUDDY1_DEMO),1)
-$(error BUDDY1_API_TEST=1 requires BUDDY1_DEMO=1)
-endif
-API_SUFFIX := _api
-endif
+BUDDY1_DEMO ?= 0
 ifneq ($(filter $(BUDDY1_DEMO),0 1),$(BUDDY1_DEMO))
 $(error Unknown BUDDY1_DEMO '$(BUDDY1_DEMO)'; use 0 or 1)
 endif
@@ -148,7 +141,7 @@ endif
 # a live hazard: an SMP=1 build was once flashed in place of an SMP=0 one and
 # only the banner in the log revealed it.
 #
-EXE_FILE := mtk3pico_smp$(SMP)_$(CONSOLE)$(WIFI_SUFFIX)$(NET_SUFFIX)$(MQTT_SUFFIX)$(CRASH_SUFFIX)$(DEMO_SUFFIX)$(API_SUFFIX)$(TEST_SUFFIX)
+EXE_FILE := mtk3pico_smp$(SMP)_$(CONSOLE)$(WIFI_SUFFIX)$(NET_SUFFIX)$(MQTT_SUFFIX)$(CRASH_SUFFIX)$(DEMO_SUFFIX)$(TEST_SUFFIX)
 
 GCC := arm-none-eabi-gcc
 AS := arm-none-eabi-gcc
@@ -208,7 +201,7 @@ ifeq ($(SMP),1)
 CFLAGS  += -DCNF_SMP=1
 ASFLAGS += -DCNF_SMP=1
 endif
-CFLAGS  += -DAPP_TEST=$(TEST) -DAPP_BUDDY1_DEMO=$(BUDDY1_DEMO) -DAPP_BUDDY1_API_TEST=$(BUDDY1_API_TEST)
+CFLAGS  += -DAPP_TEST=$(TEST) -DAPP_BUDDY1_DEMO=$(BUDDY1_DEMO)
 CFLAGS  += -DTM_CONSOLE_UART=$(CRASH_REPORT)
 ifeq ($(CRASH_REPORT),0)
 CFLAGS  += -DBOARD_UART0_FREE=1
@@ -241,7 +234,7 @@ endif
 # before any recipe executes.
 ################################################################################
 
-PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)-b1demo$(BUDDY1_DEMO)-api$(BUDDY1_API_TEST)
+PROFILE_ID := smp$(SMP)-$(CONSOLE)-wifi$(WIFI)-net$(NET)-mqtt$(MQTT)-crash$(CRASH_REPORT)-test$(TEST)-b1demo$(BUDDY1_DEMO)
 PROFILE_FILE := .build_profile
 
 ifneq ($(strip $(shell cat $(PROFILE_FILE) 2>/dev/null)),$(PROFILE_ID))

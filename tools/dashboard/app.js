@@ -53,7 +53,7 @@ function draw(data) {
     const ack = data.last_ack;
     el("ack-result").textContent = `${ack.command.toUpperCase()} ${ack.rejected ? "rejected" : "accepted"}`;
     el("ack-result").className = "ack-result " + (ack.rejected ? "rejected" : "accepted");
-    el("ack-detail").textContent = ack.rejected ? "The Pico declined this command request." : "Request acknowledged. Check USB serial to verify API dispatch.";
+    el("ack-detail").textContent = ack.rejected ? "The Pico declined this command request." : "Request submitted to Buddy 2. Confirm actual movement on the robot.";
     el("ack-time").textContent = timeLabel(ack.time);
     el("ack-hex").textContent = `0x${ack.hex}`;
   } else {

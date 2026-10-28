@@ -6,7 +6,8 @@ serial access. It communicates only with your existing MQTT broker.
 
 ## What you need
 
-- Your Pico W running the existing Buddy 1 v2 firmware. No reflash is needed.
+- Your Pico W running Buddy 1 v2 firmware with Buddy 2's real motion APIs.
+  Rebuild/reflash if you previously used the removed fake-API firmware.
 - Your existing Mosquitto broker, running and reachable on TCP port 1883.
 - Python 3.8+ and the dependency in requirements.txt on the computer running
   this app. Ubuntu/WSL works; Windows Python works too if installed.
@@ -53,9 +54,9 @@ Ubuntu/WSL avoids needing a separate Windows Python installation.
 2. Wait for **Pico ready for commands**. START requires a fresh, live
    heartbeat; an old retained status alone does not enable it.
 3. Click START, then STOP. Check the latest Pico ACK on the page.
-4. With the API-test firmware, your USB serial monitor should show
-   `motion_forward() called` and `motion_stop() called`. Those are test-stub
-   calls; ACKs do not prove physical movement.
+4. START submits `motion_set_speed(1)` and `motion_forward()` to Buddy 2;
+   STOP calls `motion_stop()`. Wait at least five seconds after boot for motion
+   readiness. ACKs confirm request submission, not physical movement.
 
 Only the broker/topic bar, START/STOP controls and heartbeat panel are shown.
 Acknowledgments appear in the feedback line beneath the buttons.
