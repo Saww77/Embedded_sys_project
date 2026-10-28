@@ -10,7 +10,7 @@
 #include <string.h>
 
 #ifndef MQTT_TOPIC_ROOT
-#define MQTT_TOPIC_ROOT "robot/" MQTT_CLIENT_ID "/v1"
+#define MQTT_TOPIC_ROOT "robot/" MQTT_CLIENT_ID "/v2"
 #endif
 #define RETRY_MS 3000u
 #define HEARTBEAT_MS 5000u

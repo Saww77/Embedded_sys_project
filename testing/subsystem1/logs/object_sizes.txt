@@ -1,9 +1,10 @@
-GNU Arm 14.2.1, Cortex-M0+, -O2, SMP=1 TEST=0 MQTT=1 SDK=2.2.0
+GNU Arm 14.2.1, Cortex-M0+, -O2, SDK=2.2.0
 text data bss filename
-1212 0 208 original mqtt_utk.o
+1212 0 208 original archive mqtt_utk.o
 1407 0 169 updated mqtt_utk.o
 444 0 10 updated mqtt_bridge.o
-376 0 0 updated s1_comm.o
-656 0 0 updated s1_wire.o
+600 0 0 updated s1_comm.o
+564 0 0 updated s1_wire.o
 Object measurements only; kernel buffers add 512 runtime bytes, task stack 2048,
-plus metadata/alignment. Complete linked firmware RAM remains unmeasured.
+plus metadata/alignment. See demo_build.txt for linked demo size; hardware heap
+and stack measurements remain outstanding. Original firmware is a different target.

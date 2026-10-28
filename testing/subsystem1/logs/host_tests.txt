@@ -2,5 +2,5 @@ PASS wire: exhaustive command bytes, all terrain values, line values, obstacle b
 PASS bridge: startup rollback, init ordering, copy ownership, bounds, full queue, polling only
 PASS RX: fragments, topic/payload ownership, binary NUL, oversize, length mismatch, wrong topic, full queue
 PASS service: connect/subscription backoff, resubscribe, binary heartbeat/LWT, bounded TX, ERR_MEM, expiry, link loss, clock wrap
-PASS application: public API bounds, STOP dispatch, malformed rejection, snapshot, interval command, binary ACK
+PASS application: heartbeat-only, START/STOP, readiness/fault/queue rejection, duplicate START, STOP priority, watchdog renewal, link-loss stop and no auto-resume
 All Buddy 1 host test groups passed (mock kernel/lwIP; no hardware claims).

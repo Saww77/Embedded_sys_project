@@ -192,7 +192,7 @@ limit there. The numbers below are the example's usage.
 
 (The kernel's USB and WiFi service tasks also use a few of these.)
 
-## Buddy 1 Wi-Fi/MQTT integration (binary protocol v1)
+## Buddy 1 Wi-Fi/MQTT integration (binary protocol v2)
 
 - Owner: subsystem1, priorities 12 (existing LED), 13 (communications task).
 - Kernel Wi-Fi service at priority 4 exclusively owns CYW43/lwIP/MQTT calls.
@@ -200,8 +200,11 @@ limit there. The numbers below are the example's usage.
   `lib/liblwip/sysdepend/pico_rp2040/mqtt_bridge.*`.
 - Other buddies include `app_program/subsystem1/s1_comm.h` and publish coherent
   snapshots using `s1_publish_*`. No sensor values are fabricated by Buddy 1.
-- Buddy 2: motion status is polled via existing `motion_get_status`; remote STOP
-  calls existing `motion_stop`, which owns motor safety/queue flushing.
+- Buddy 2: START submits speed level 1 and forward, then renews speed requests
+  while active. STOP, link loss or motion faults clear that request and call
+  `motion_stop`. Heartbeat-only default; no sensor data collection required.
+- `BUDDY1_DEMO=1` builds/starts only buddies 1 and 2; no changes to buddies 2..5
+  source are needed. The full five-buddy profile remains available.
 - No new GPIOs claimed. GP19 and the existing LED interfaces are preserved for
   the template monitor; communication must never be suspended with `tid_led`.
 - Protocol, limits, command semantics, validation and outstanding integration:

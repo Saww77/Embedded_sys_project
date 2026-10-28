@@ -1,0 +1,10 @@
+GNU Arm 14.2.1; Pico SDK 2.2.0; SMP=1, USB console, WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_DEMO=1
+Release and TEST=1 builds: PASS (ELF linked and UF2 generated).
+Placeholder network configuration used; replace ignored config/wifi_secrets.h and rebuild for your hardware.
+
+text	   data	    bss	    dec	    hex	filename
+ 343320	     96	  82432	 425848	  67f78	build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_b1demo.elf
+ 344880	     96	  82432	 427408	  68590	build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_b1demo_test.elf
+mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_b1demo.uf2: 1342 valid UF2 blocks; integrity PASS
+mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_b1demo_test.uf2: 1348 valid UF2 blocks; integrity PASS
+These are compilation/format checks, not on-device execution or Wi-Fi/motor verification.

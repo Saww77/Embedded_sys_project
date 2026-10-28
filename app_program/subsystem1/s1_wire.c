@@ -21,22 +21,10 @@ unsigned s1_wire_get(const unsigned char *bytes, unsigned bit, unsigned count)
     return value;
 }
 
-int s1_command_decode(const unsigned char *data, unsigned length,
-                      unsigned *opcode, unsigned *period)
+int s1_command_decode(const unsigned char *data, unsigned length, unsigned *opcode)
 {
-    unsigned op;
-    unsigned ticks = 0;
-    if (data == 0 || opcode == 0 || period == 0 || length == 0u) { return 0; }
-    op = data[0] & 3u;
-    if (op == S1_CMD_PERIOD) {
-        if (length != 2u || (data[1] & 0xfeu) != 0u) { return 0; }
-        ticks = s1_wire_get(data, 2u, 7u);
-        if (ticks == 0u || ticks > 100u) { return 0; }
-    } else if (op > S1_CMD_SNAPSHOT || length != 1u || (data[0] & 0xfcu) != 0u) {
-        return 0;
-    }
-    *opcode = op;
-    *period = ticks;
+    if (data == 0 || opcode == 0 || length != 1u || data[0] > 1u) { return 0; }
+    *opcode = data[0];
     return 1;
 }
 

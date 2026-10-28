@@ -33,26 +33,23 @@ def decode(topic, data):
                 "right_rpm": bits(data, 18, 9), "left_pwm": bits(data, 27, 7),
                 "right_pwm": bits(data, 34, 7), "left_progress": bits(data, 41, 13),
                 "right_progress": bits(data, 54, 13)}
-    return {"opcode": bits(data, 0, 2), "rejected": bool(data[0] & 4)}
+    return {"opcode": bits(data, 0, 1), "rejected": bool(data[0] & 2)}
 
 
-def command_payload(command, ticks):
+def command_payload(command):
     if command == "stop":
         return b"\x00"
-    if command == "snapshot":
+    if command == "start":
         return b"\x01"
-    if not 1 <= ticks <= 100:
-        raise ValueError("ticks must be 1..100 (100ms units)")
-    return (2 | (ticks << 2)).to_bytes(2, "little")
+    raise ValueError("command must be start or stop")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("host", help="MQTT broker IPv4 address")
-    parser.add_argument("action", choices=("listen", "stop", "snapshot", "period"))
-    parser.add_argument("--root", default="robot/se09/v1")
+    parser.add_argument("action", choices=("listen", "start", "stop"))
+    parser.add_argument("--root", default="robot/se09/v2")
     parser.add_argument("--port", type=int, default=1883)
-    parser.add_argument("--ticks", type=int, default=10, help="period in 100ms ticks, 1..100")
     args = parser.parse_args()
     try:
         import paho.mqtt.client as mqtt
@@ -60,7 +57,7 @@ def main():
         raise SystemExit("Install demo dependency: python3 -m pip install paho-mqtt==2.1.0") from exc
     if args.action != "listen":
         try:
-            payload = command_payload(args.action, args.ticks)
+            payload = command_payload(args.action)
         except ValueError as exc:
             parser.error(str(exc))
     connected = threading.Event()

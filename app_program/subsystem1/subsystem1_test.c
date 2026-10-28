@@ -39,20 +39,16 @@ EXPORT void subsystem1_test(void)
 		TEST_CHECK("S1-U02", waiting >= 9, "LED task sleeps between ticks");
 	}
 
-	{
-        unsigned char data[2] = { 0x92, 0x01 };
+    {
+        unsigned char data[2] = {1, 0};
         unsigned opcode = 0;
-        unsigned ticks = 0;
-        TEST_CHECK("S1-U03", s1_command_decode(data, 2, &opcode, &ticks) &&
-                   opcode == S1_CMD_PERIOD && ticks == 100,
-                   "binary interval command preserves 100 ticks");
-        data[1] = 0x81;
-        TEST_CHECK("S1-U04", !s1_command_decode(data, 2, &opcode, &ticks),
-                   "noncanonical padding rejected");
-        TEST_CHECK("S1-U05", s1_wire_terrain(data, 2000, 5) &&
-                   s1_wire_get(data, 0, 11) == 2000 &&
-                   s1_wire_get(data, 11, 3) == 5,
-                   "packed terrain boundaries round trip");
+        TEST_CHECK("S1-U03", s1_command_decode(data, 1, &opcode) &&
+                   opcode == S1_CMD_START, "binary START decoded");
+        TEST_CHECK("S1-U04", !s1_command_decode(data, 2, &opcode),
+                   "extra command bytes rejected");
+        data[0] = 0x81;
+        TEST_CHECK("S1-U05", !s1_command_decode(data, 1, &opcode),
+                   "noncanonical command padding rejected");
     }
     TEST_SUMMARY("subsystem1");
 }

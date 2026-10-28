@@ -1,171 +1,178 @@
-# Buddy 1: Wi-Fi, MQTT commands and binary telemetry
+# Buddy 1: heartbeat and MQTT START/STOP demo
 
-This implements Buddy 1 against the uploaded repository. Project descriptions
-supply scope; the new minimum-bit requirement supersedes text application
-payloads. The professor's service-ownership guidance determines the bridge.
-MQTT remains in `lib/liblwip/sysdepend/pico_rp2040/mqtt_utk.c`.
+The immediate demo needs no sensor collection. The Pico publishes a binary
+heartbeat; MQTT START asks Buddy 2 to drive forward; STOP asks it to stop.
+The optional sensor publication APIs remain available for later integration
+but are never called automatically by this demo.
 
-## Architecture and startup
+## Build and flash
 
-```
-other subsystem tasks -> s1_publish_* -> TX message buffer
-                                             |
-                    kernel Wi-Fi task -> mqtt_utk.c -> broker
-                                             ^          |
-Buddy 1 communication task <- RX message buffer <- callbacks
-```
-
-Only the Wi-Fi task calls lwIP/MQTT. Both message buffers are created by
-`subsystem1_init()` before subsystem tasks start. The Wi-Fi task can start
-earlier, so an acquire/release readiness gate publishes both handles only
-after successful creation. A failed second allocation deletes the first.
-There is one initialization caller. Buffer handles are immutable afterward.
-
-All bridge operations use `TMO_POL`. The service processes at most two TX
-frames per 2ms iteration. Buddy 1 handles at most four commands per 100ms
-iteration; it never calls network APIs. RX fragments and topics are copied
-before callbacks return. A recognized topic is converted into its fixed
-three-bit dictionary ID before enqueueing, rather than storing a pointer or
-repeating its string in every message. Binary bytes, including NUL, are preserved.
-
-Existing Wi-Fi association/DHCP/rejoin remains owned by `cyw43_utk.c`. The
-MQTT poll runs for both link-up and link-down. MQTT connection attempts and
-failed subscriptions back off 3 seconds. Each accepted connection installs
-callbacks and restores the command subscription. Failed SUBACKs retry too.
-No application timer calls lwIP; no extra reconnect/heartbeat timeout chains.
-
-Heartbeat is a retained binary status byte every 5 seconds; a retained one-byte
-zero Last Will marks offline after broker detection. It does not imply an
-instantaneous Wi-Fi-loss indication: allow MQTT's 60s keepalive and broker
-failure detection. The local `s1_connection_status()` snapshot clears connection
-bits on link loss. Drop bits are sticky until reboot, and describe service-side
-drops; caller-side queue rejection is reported through the API return value.
-
-## Build and network configuration
-
-Use Pico SDK 2.2.0 with its `tinyusb`, `cyw43-driver`, and `lwip` submodules
-initialized, plus `arm-none-eabi-gcc`, make and a host C++ compiler as in the
-repository README. No worktree is required; use your existing isolated checkout.
+Use Pico SDK 2.2.0 with its `tinyusb`, `cyw43-driver` and `lwip` submodules,
+`arm-none-eabi-gcc`, make and host g++ (repository README). Work in the existing
+isolated checkout; do not create a worktree just for this workflow.
 
 ```sh
 cp config/wifi_secrets.example.h config/wifi_secrets.h
-# Edit the ignored wifi_secrets.h with local Wi-Fi and broker settings.
-# Use a broker IPv4 address, a unique MQTT_CLIENT_ID and a unique topic root.
+# Edit config/wifi_secrets.h: Wi-Fi name/password, broker IPv4 address,
+# MQTT_CLIENT_ID (unique), MQTT_TOPIC_ROOT "robot/se09/v2".
 cd build_make
-make -j4 WIFI=cyw43 NET=lwip MQTT=1
-# On-target self-tests (includes codec checks):
-make -j4 WIFI=cyw43 NET=lwip MQTT=1 TEST=1
+make -j4 WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_DEMO=1
 ```
 
-The example uses `robot/se09/v1` as the topic root. Topics must fit 63 bytes
-including suffix; an overlong configured root causes a compilation error.
-The fallback root for an older secrets header is `robot/<MQTT_CLIENT_ID>/v1`.
-`MQTT_TOPIC` from the old heartbeat example is no longer used.
+Output: `build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_b1demo.uf2`.
+Hold BOOTSEL while attaching USB and copy that UF2 to RPI-RP2. View the USB
+serial console at 115200 baud. Raise the wheels for the first motor test.
 
-This is the provided lwIP TCP MQTT stack on port 1883, without broker login or
-TLS. Use a trusted lab network and a broker configured for that access. Do not
-expose remote STOP on a public unauthenticated broker. Never commit secrets.
-With MQTT disabled, publishing returns `E_NOSPT` and the existing LED continues.
+The demo builds and initializes only Buddy 1 and Buddy 2. Their init functions
+run before their application tasks start. No sensor subsystems or automatic
+motor-test producer are started. Normal `BUDDY1_DEMO=0` retains all five buddies
+and still has the original Buddy 3/4 sample-interface errors. Demo source
+selection is a build option, not a change to their code. Buddy 2 requires
+SMP=1 for its core-1 encoder IRQ ownership, and uses GP0/GP1 for encoders:
+use the USB console and CRASH_REPORT=0. Conflicting demo profiles are rejected.
 
-## Communication API
+Use the wiring and calibrated configuration in
+`app_program/subsystem2/motion_config.h`. Buddy 2 takes five seconds to become
+ready after its task starts. START before readiness is rejected; send a new
+START after readiness. Firmware compilation does not validate your wiring.
 
-Include `app_program/subsystem1/s1_comm.h` from task code.
+## MQTT topics and compact binary commands
 
-| API | Valid input | Behavior |
+The default root is **`robot/se09/v2`**. If updating an existing ignored
+`wifi_secrets.h`, change its root from v1 to v2 explicitly. Fallback for a
+header without MQTT_TOPIC_ROOT is `robot/<MQTT_CLIENT_ID>/v2`.
+V1 snapshot/interval commands have been removed. A new topic version prevents
+old snapshot messages from being interpreted as START.
+
+| Topic | Direction | Binary payload |
 | --- | --- | --- |
-| `s1_publish_vehicle(state, faults)` | state 0..7; five-bit faults | vehicle/controller snapshot |
-| `s1_publish_line(ir, barcode)` | IR bitmask 0..7; barcode 0 none, 1..4 A..D | one-byte line snapshot |
-| `s1_publish_terrain(height, phase)` | height 0..2000 mm; phase 0..5 | two-byte terrain snapshot |
-| `s1_publish_obstacle(nearest, width, left, right)` | distances 0..4000 mm; width 0..2000 mm | six-byte obstacle snapshot |
-| `s1_connection_status()` | none | atomic five-bit link/drop snapshot |
+| `<root>/status` | Pico -> broker | 1 byte, retained, every 5 seconds |
+| `<root>/command` | PC -> Pico | `00` STOP; `01` START; QoS 0, **not retained** |
+| `<root>/ack` | Pico -> PC | 1 byte: command bit 0, rejected bit 1 |
 
-Return `E_OK` means copied into TX, not broker delivery. `E_TMOUT` means full,
-`E_PAR` rejects invalid input, and `E_OBJ` means not initialized. Callers choose
-whether to retry. Never call these APIs in an ISR. Pass data copied under the
-owning subsystem's synchronization; the API cannot make a racy source snapshot
-safe. Enqueued buffers are copied, so stack-local input is safe after return.
-No new shared packed structure is updated by multiple owners.
+Command payloads contain one application bit and seven zero padding bits.
+They are bytes, **not the strings `START`, `STOP`, `0` or `1`**. Exactly one byte
+is required; extra bytes, zero length and nonzero padding are rejected.
 
-The motion snapshot is published automatically every second using Buddy 2's
-existing nine-byte `S2_STATUS`; unavailable motion is omitted. Its progress
-fields are forwarded exactly as Buddy 2 defines them; raw encoder totals are
-not exposed by the current motion public API. Sensor and vehicle topics are
-published only when their owners invoke the APIs. Buddy 3 currently contains
-the template consumer, so there is no real line/barcode source to wire up yet.
-Buddy 4/5 integration is left to their owners. State and terrain phase meanings
-must be agreed with the controller; their numerical ranges are enforced.
-The initial measurement bounds above are explicit protocol limits, not claims
-of calibrated sensor performance. Out-of-range input is rejected, never wrapped
-or silently saturated. Revise the protocol/version if required ranges grow.
+ACK values: `00` STOP accepted, `01` START submitted, `02` malformed STOP-like
+payload rejected, `03` START rejected. ACK means Buddy 1 accepted/submitted
+requests, not that a physical movement completed. Buddy 2 can subsequently
+reject a queued request (e.g. settling, stale request or fault); Buddy 1 checks
+for velocity mode after four polling ticks and stops if it did not start.
+A successful START ACK is not proof of motor movement. ACK delivery is best effort.
 
-## Commands and acknowledgments
+Heartbeat bits: bit 0 Wi-Fi/IP up, bit 1 MQTT connected, bit 2 command
+subscription acknowledged, bit 3 sticky service TX drop, bit 4 sticky RX drop.
+Bits 5..7 are zero. The retained Last Will is `00` (offline). A broker detects
+failure using TCP/keepalive; it is not instantaneous. Keepalive is 60 seconds.
 
-Publish binary data to `<root>/command`, QoS 0, retain=false:
+### Motor behavior
 
-| Command | Payload hex | Handling |
-| --- | --- | --- |
-| STOP | `00` | call Buddy 2's priority stop latch; no remote movement/start |
-| SNAPSHOT | `01` | request current motion status |
-| PERIOD | opcode 2 bits + ticks 7 bits, little-endian | interval 1..100 ticks of 100ms |
-| example PERIOD 1000ms | `2a00` | 10 ticks |
-| example PERIOD 10000ms | `9201` | 100 ticks |
+- Power-up is stopped. START submits `motion_set_speed(1)` followed by
+  `motion_forward()`. Level 1 means 25% of Buddy 2's configured target RPM,
+  **not 25% PWM**. Buddy 2 alone owns pins, encoder handling and PID.
+- While active, Buddy 1 submits a speed renewal every four 50ms task sleeps
+  (approximately 200ms plus scheduler/timer overhead), satisfying Buddy 2's
+  existing 1-second velocity watchdog. START is not periodically reissued.
+- Duplicate START while active is idempotent. A START is rejected if offline,
+  not subscribed, not ready, faulted or busy with another request. A failed
+  submission calls the priority stop to cancel partial queue submissions.
+- STOP calls `motion_stop()` and clears the active request. STOP dominates
+  any START later in the same drained batch. No further speed renewals occur.
+- Observed Wi-Fi/MQTT/subscription loss, motion faults, unavailable status,
+  rejected start or failed renewal stops requested motion and clears the latch.
+  Reconnecting never restarts it automatically; a new START is required.
+- The command task checks every 50ms sleep; Buddy 2 enforces its own scheduling,
+  watchdog and fault protection. Actual stop latency requires measurement.
+  A silent network partition may take MQTT keepalive time to become visible.
+  A network STOP is not a substitute for a physical power-off switch.
 
-STOP and SNAPSHOT require exactly one byte with all unused bits zero. PERIOD
-requires exactly two bytes with padding zero and ticks in range. Opcode 3,
-malformed lengths, unused bits and out-of-range values are rejected. PERIOD
-also requests an immediate snapshot. No command controls direction or speed;
-the robot's navigation remains autonomous.
+Do not retain commands or run a repeated START publisher. Clear any old retained
+command at your configured root before testing. The lwIP raw callback does not
+expose the retain flag, so firmware cannot reject a retained START on that basis.
+Use a trusted lab broker: the provided stack is plaintext TCP on port 1883,
+without broker login or TLS. Keep Wi-Fi credentials out of Git.
 
-`<root>/ack` is one byte: bits 0..1 opcode, bit 2 rejected, bits 3..7 zero.
-ACK means Buddy 1 dispatched/accepted the request, not that a motion completed
-or that motors physically stopped. ACK publication is best effort. There is
-no command identifier or exactly-once guarantee; these commands are idempotent.
-Do not retain commands. This lwIP callback does not expose the incoming retain
-flag, so the receiver cannot enforce that policy. Clear any retained commands
-on the broker before testing. A network STOP is not a certified emergency stop:
-packet loss, disconnection or a full RX queue can prevent delivery.
+## Run the PC demo
 
-## Bounded-memory and loss policy
-
-TX and RX each allocate a 256-byte kernel ring. Maximum frame is 33 bytes:
-three-bit topic ID in one byte plus 1..32 payload bytes. Actual v1 frames are
-2..10 bytes. Each kernel record also has a four-byte header and four-byte
-alignment. A full ring rejects the newest message without blocking. No queue
-or payload grows dynamically after initialization.
-
-Wrong/overlong topics, zero-length or >32-byte incoming payloads and fragment
-length mismatches drop the whole message. No truncated command is executed.
-The RX callback copies its topic into a 64-byte staging array and maps it to
-command ID 7; fragments use a 32-byte staging array. The final kernel send
-copies into RX before return. Non-final fragments are never visible to tasks.
-
-Offline TX telemetry is drained/discarded (two frames per poll), not guaranteed
-to replay. `ERR_MEM` holds one pending frame for at most 5 seconds and retries
-on later service polls. Other immediate failures and expiry drop that frame.
-All telemetry and commands use QoS 0, so there is no delivery guarantee or
-application retry after lwIP accepts a publish. Do not infer successful broker
-delivery from queue acceptance. The service's sticky drop flags aid diagnosis.
-
-## Demo
-
-On the PC, install the optional demo dependency in a virtual environment:
+Set up an optional client virtual environment:
 
 ```sh
 python3 -m venv .venv
 . .venv/bin/activate
 python3 -m pip install paho-mqtt==2.1.0
 python3 tools/buddy1_mqtt.py 192.168.1.10 listen
-# Second terminal, same venv:
-python3 tools/buddy1_mqtt.py 192.168.1.10 snapshot
-python3 tools/buddy1_mqtt.py 192.168.1.10 period --ticks 20
+```
+
+In another terminal using that venv, after the robot has booted for five seconds:
+
+```sh
+python3 tools/buddy1_mqtt.py 192.168.1.10 start
 python3 tools/buddy1_mqtt.py 192.168.1.10 stop
 ```
 
-Raise the wheels before testing STOP and motion reporting. Confirm decoded
-`/status`, `/motion`, and `/ack`, then restart the broker and power-cycle the
-AP: confirm heartbeat recovery, a restored command subscription and a valid
-new snapshot. Have each sensor owner call its publication API and compare
-known boundary values. Measure latency and motion-control jitter under queue
-load. Record actual logs and video; the host mocks do not replace this demo.
+Replace the address with your broker. Commands send a single non-retained byte.
+`start` exits after sending; the firmware maintains motion until STOP or a
+failure. The listener prints decoded heartbeat and ACK. It does not expect
+sensor telemetry. Custom roots use `--root robot/<your-id>/v2` on both clients.
 
-See `testing/subsystem1/TEST_LOG_BUDDY1.md` for executed checks and build blockers.
+With mosquitto tools instead:
+
+```sh
+python3 -c 'import sys; sys.stdout.buffer.write(bytes([1]))' > /tmp/start.bin
+python3 -c 'import sys; sys.stdout.buffer.write(bytes([0]))' > /tmp/stop.bin
+mosquitto_sub -h 192.168.1.10 -t 'robot/se09/v2/#' -F '%t %x'
+# Another terminal (do not add -r):
+mosquitto_pub -h 192.168.1.10 -t robot/se09/v2/command -f /tmp/start.bin
+mosquitto_pub -h 192.168.1.10 -t robot/se09/v2/command -f /tmp/stop.bin
+```
+
+## Bridge and ownership
+
+```
+Buddy 1 command task -> copied TX message buffer -> mqtt_utk.c -> broker
+Buddy 1 command task <- copied RX message buffer <- mqtt_utk.c <- broker
+           |
+           +-> Buddy 2 motion API -> motor-owner task -> hardware
+```
+
+MQTT/lwIP calls remain exclusively in the kernel Wi-Fi service. The service
+polls at 2ms intervals, including while the link is down. Heartbeat is emitted
+there; no application task calls lwIP. Connection/subscription failures back off
+3 seconds. Every accepted connection reinstalls callbacks and subscriptions.
+
+The bridge initialization publishes both immutable handles through an
+acquire/release byte only after both buffers exist; partial allocation rolls
+back. Each buffer is a 256-byte kernel ring; maximum copied frame is 33 bytes
+(three-bit dictionary ID in one byte plus up to 32 payload bytes). Commands and
+ACKs currently use 2-byte frames. Kernel records have a four-byte header and
+four-byte alignment. A full queue rejects newest; no task blocks on a bridge
+operation. Application API errors report rejected sends to the caller.
+
+RX copies the topic into a 64-byte staging array and maps it to dictionary ID 7;
+fragments are copied into a 32-byte staging array. The completed payload and
+route ID are copied to RX before callback return. Wrong/overlong topics,
+length mismatches or oversized payloads drop the entire message; no truncated
+command is executed. Topics and bytes never cross tasks as borrowed pointers.
+The service processes at most two TX frames per poll, discards offline TX,
+and holds an ERR_MEM pending frame for no longer than five seconds. QoS 0 is
+best effort; queue success does not guarantee delivery. Shared status flags
+have one writer, with whole-byte atomic publication for other tasks.
+
+## Future sensor integration
+
+The `s1_publish_vehicle`, `s1_publish_line`, `s1_publish_terrain` and
+`s1_publish_obstacle` task-context APIs remain in `s1_comm.h`. Valid inputs and
+bit encodings are in `DATA_REPRESENTATION.md`; owners must supply coherent
+snapshots. They return E_OK when copied, E_TMOUT when full, E_PAR for invalid
+input, E_OBJ before initialization, or E_NOSPT without MQTT. They are not ISR
+APIs. The command-only demo does not call them and fabricates no readings.
+
+## Validation
+
+Host tests exercise canonical binary encoding, bridge initialization/copying,
+fragmentation/bounds, retries/reconnects, START/STOP, speed renewals, connection
+loss, motion faults, queue failures and no automatic restart. Full demo release
+and TEST=1 images are built against real SDK/lwIP headers. Target execution,
+physical motor operation and network round trips still require your Pico W.
+See `testing/subsystem1/TEST_LOG_BUDDY1.md` for exact evidence and limits.

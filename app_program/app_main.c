@@ -107,19 +107,27 @@ EXPORT INT usermain(void)
 	tm_printf((UB*)"single-core build\n");
 #endif
 
+#if APP_BUDDY1_DEMO
+    tm_printf((UB*)"Buddy 1 demo: heartbeat + MQTT START/STOP; sensors disabled\n");
+#endif
+
 	/* Phase 1: every subsystem creates its kernel objects */
 	CHECK(subsystem1_init(), "subsystem1_init");
 	CHECK(subsystem2_init(), "subsystem2_init");
+#if !APP_BUDDY1_DEMO
 	CHECK(subsystem3_init(), "subsystem3_init");
 	CHECK(subsystem4_init(), "subsystem4_init");
 	CHECK(subsystem5_init(), "subsystem5_init");
+#endif
 
 	/* Phase 2: every subsystem starts its tasks */
 	CHECK(subsystem1_start(), "subsystem1_start");
 	CHECK(subsystem2_start(), "subsystem2_start");
+#if !APP_BUDDY1_DEMO
 	CHECK(subsystem3_start(), "subsystem3_start");
 	CHECK(subsystem4_start(), "subsystem4_start");
 	CHECK(subsystem5_start(), "subsystem5_start");
+#endif
 
 	tm_printf((UB*)"all subsystems started\n\n");
 
@@ -130,9 +138,11 @@ EXPORT INT usermain(void)
 	tm_printf((UB*)"[TEST] === test run start ===\n");
 	subsystem1_test();
 	subsystem2_test();
+#if !APP_BUDDY1_DEMO
 	subsystem3_test();
 	subsystem4_test();
 	subsystem5_test();
+#endif
 	tm_printf((UB*)"[TEST] === test run end ===\n");
 #endif
 

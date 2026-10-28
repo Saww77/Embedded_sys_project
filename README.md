@@ -257,13 +257,27 @@ They need the SDK's `lib/lwip` submodule and a `config/wifi_secrets.h`
 T-License 2.2. This dual-core RP2040 port is derived from the official
 μT-Kernel 3.0 BSP (`tron-forum/mtk3_bsp`, branch `pico_rp2040`).*
 
-## Buddy 1 Wi-Fi/MQTT implementation
+## Buddy 1 heartbeat + START/STOP demo
 
-Buddy 1 now provides a Wi-Fi-service-owned MQTT bridge, compact binary telemetry,
-command handling and host tests. See [Buddy 1 guide](docs/buddy1/README.md),
+Build and run Wi-Fi/MQTT heartbeat with Buddy 2 forward/stop control, without
+collecting sensor data or starting the unfinished sensor subsystems:
+
+```sh
+cp config/wifi_secrets.example.h config/wifi_secrets.h
+# Edit your Wi-Fi credentials and broker IPv4 address in the ignored file.
+# Use MQTT_TOPIC_ROOT "robot/se09/v2" (the v1 command meanings have changed).
+cd build_make
+make -j4 WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_DEMO=1
+```
+
+Output: `build_make/mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_b1demo.uf2`.
+Heartbeat is automatic; motors remain stopped until an MQTT START. The demo
+uses the existing motor/encoder wiring in `subsystem2/motion_config.h`; raise
+wheels for the first test. Buddy 2 has a five-second readiness delay.
+
+See [Buddy 1 guide](docs/buddy1/README.md) for MQTT commands,
 [data representation](docs/buddy1/DATA_REPRESENTATION.md) and
-[validation record](testing/subsystem1/TEST_LOG_BUDDY1.md). Enable it with
-`make WIFI=cyw43 NET=lwip MQTT=1` in `build_make` after configuring the ignored
-`config/wifi_secrets.h`. The original archive contains incompatible template
-consumer/monitor references; those must be integrated by their owners before
-the complete firmware can build. No working integrated UF2 is claimed.
+[validation record](testing/subsystem1/TEST_LOG_BUDDY1.md). Host tests and complete
+demo UF2 generation pass; physical Wi-Fi/motor behavior is not hardware-verified.
+Without `BUDDY1_DEMO=1`, all five subsystems are included and the original
+consumer/monitor interface errors still need to be resolved by their owners.

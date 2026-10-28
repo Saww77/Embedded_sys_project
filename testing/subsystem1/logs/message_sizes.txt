@@ -3,4 +3,4 @@ vehicle: 24 -> 1
 line: 8 -> 1
 terrain: 8 -> 2
 obstacle: 16 -> 6
-period command: 8 -> 2
+START/STOP command: 4 -> 1
