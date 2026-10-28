@@ -5,6 +5,15 @@ heartbeat; MQTT START asks Buddy 2 to drive forward; STOP asks it to stop.
 The optional sensor publication APIs remain available for later integration
 but are never called automatically by this demo.
 
+## Only a Pico W and Wi-Fi available?
+
+Use **[the Pico-only API test](PICO_ONLY_TEST.md)**. Build with
+`WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_API_TEST=1`; it logs the public forward/stop
+API calls over USB serial and excludes all real motor/encoder code. It is
+immediately ready and needs no motor hardware. The rest of this guide describes
+the real Buddy 2 motor demo (`BUDDY1_API_TEST=0`). Both use real MQTT and the
+same command task and binary command format.
+
 ## Build and flash
 
 Use Pico SDK 2.2.0 with its `tinyusb`, `cyw43-driver` and `lwip` submodules,

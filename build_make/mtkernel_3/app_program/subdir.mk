@@ -7,6 +7,10 @@ TEMP_SRCS = $(wildcard ../app_program/*.c) $(wildcard ../app_program/*/*.c)
 ifeq ($(BUDDY1_DEMO),1)
 TEMP_SRCS = $(wildcard ../app_program/*.c) $(wildcard ../app_program/subsystem1/*.c) $(wildcard ../app_program/subsystem2/*.c)
 endif
+ifeq ($(BUDDY1_API_TEST),1)
+# Resolve the same public motion API using serial-logging stubs, no motor code.
+TEMP_SRCS = $(wildcard ../app_program/*.c) $(wildcard ../app_program/subsystem1/*.c)
+endif
 TEMP_OBJS = $(TEMP_SRCS:.c=.o)
 TEMP_DEPS = $(TEMP_SRCS:.c=.d)
 

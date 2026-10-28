@@ -107,7 +107,9 @@ EXPORT INT usermain(void)
 	tm_printf((UB*)"single-core build\n");
 #endif
 
-#if APP_BUDDY1_DEMO
+#if APP_BUDDY1_API_TEST
+    tm_printf((UB*)"Buddy 1 API TEST: simulated motion API, no motor driver loaded\n");
+#elif APP_BUDDY1_DEMO
     tm_printf((UB*)"Buddy 1 demo: heartbeat + MQTT START/STOP; sensors disabled\n");
 #endif
 

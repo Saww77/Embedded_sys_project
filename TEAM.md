@@ -210,3 +210,8 @@ limit there. The numbers below are the example's usage.
 - Protocol, limits, command semantics, validation and outstanding integration:
   `docs/buddy1/README.md`, `docs/buddy1/DATA_REPRESENTATION.md` and
   `testing/subsystem1/TEST_LOG_BUDDY1.md`.
+
+- For Pico W + Wi-Fi without motors: `BUDDY1_API_TEST=1` implies the isolated
+  demo and substitutes `subsystem1/s1_motion_stub.c` for all real Buddy 2 C files.
+  USB logs prove API dispatch; they do not verify Buddy 2's real implementation.
+  See `docs/buddy1/PICO_ONLY_TEST.md`. Normal builds default to test stubs off.

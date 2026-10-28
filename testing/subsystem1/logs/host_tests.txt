@@ -4,3 +4,5 @@ PASS RX: fragments, topic/payload ownership, binary NUL, oversize, length mismat
 PASS service: connect/subscription backoff, resubscribe, binary heartbeat/LWT, bounded TX, ERR_MEM, expiry, link loss, clock wrap
 PASS application: heartbeat-only, START/STOP, readiness/fault/queue rejection, duplicate START, STOP priority, watchdog renewal, link-loss stop and no auto-resume
 All Buddy 1 host test groups passed (mock kernel/lwIP; no hardware claims).
+PASS API-test stub: signatures, serial logs, simulated state, bounds and quiet renewals (no real motor driver)
+PASS API dispatch: copied START/STOP -> real command task -> serial-logging test API -> accepted ACKs

@@ -257,6 +257,23 @@ They need the SDK's `lib/lwip` submodule and a `config/wifi_secrets.h`
 T-License 2.2. This dual-core RP2040 port is derived from the official
 μT-Kernel 3.0 BSP (`tron-forum/mtk3_bsp`, branch `pico_rp2040`).*
 
+## Buddy 1 with only a Pico W and Wi-Fi (no motor hardware)
+
+Use the API-dispatch test to receive real MQTT START/STOP commands and print
+`motion_forward() called` / `motion_stop() called` over USB serial. It replaces
+Buddy 2 with clearly labeled test stubs and never initializes its motor driver.
+This checks the interface and dispatch, not Buddy 2's real motor implementation.
+
+```sh
+# Configure config/wifi_secrets.h with your Wi-Fi and broker first.
+cd build_make
+make -j4 WIFI=cyw43 NET=lwip MQTT=1 BUDDY1_API_TEST=1
+```
+
+Flash `mtk3pico_smp1_usb_cdc_wifi_lwip_mqtt_b1demo_api.uf2`.
+[Follow the Pico-only test instructions](docs/buddy1/PICO_ONLY_TEST.md).
+You still need an MQTT broker and a client on your computer, but no dashboard.
+
 ## Buddy 1 heartbeat + START/STOP demo
 
 Build and run Wi-Fi/MQTT heartbeat with Buddy 2 forward/stop control, without

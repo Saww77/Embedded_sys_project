@@ -112,3 +112,15 @@ startup rollback, connection/subscription retries, START/STOP, duplicate START,
 STOP dominance, readiness/fault/queue rejection, speed renewal, owner rejection
 and stop-on-loss without reconnect auto-resume. These are mocks, not hardware
 or network-throughput measurements.
+
+## Pico-only API-test representation
+
+`BUDDY1_API_TEST=1` uses a private one-byte structure: one moving bit and a
+three-bit speed level (0..4), with a size assertion. It is initialized before
+application startup, then accessed solely by the command task; its test-report
+function does not read or modify it. No concurrent packed read-modify-write
+occurs. It reconstructs the required existing Buddy 2 status ABI locally for
+command-control checks; no simulated sensor values are sent as real telemetry.
+The API-test image excludes the real motor code, so its RAM cannot be compared
+with the motor demo as an equal-functionality optimization. See the dedicated
+build log for its linked size and source/symbol exclusion evidence.
